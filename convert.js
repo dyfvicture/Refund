@@ -19,7 +19,7 @@ async function init() {
             addrArr.push(itemArr[1]);
             var eth = Number(itemArr[3].substring(1, itemArr[3].length-1));
             //console.log(itemArr[3]+"  |||| "+ eth+" * 100 * 10^6 = "+(Math.floor(eth * 100)*10000000000000000))
-            eth = Math.floor(eth * 100)*10000000000000000;
+            eth = Math.floor(eth * 100)*1e+16;
             ethArr.push(eth);
         }
     });
@@ -32,23 +32,36 @@ async function init() {
 }
 
 async function split(onceTake){
-    var loop = Math.ceil(addrArr.length / onceTake)
-    var file = "/Users/keithdu/export.json"
-    await clearFile(file)
+    var loop = Math.ceil(addrArr.length / onceTake);
+    var file = "/Users/keithdu/export.json";
+    await clearFile(file);
+
     for(var i = 0;i < loop; i++) {
         var from = onceTake * i;
         var to = onceTake * (i+1);
         var addrSplit = addrArr.slice(from, to);
         var ethSplit = ethArr.slice(from, to);
-        var exportStr = "\r\n\n\r\n address:[";
+        var exportStr = "\r\n\n\r\n[";
         exportStr += addrSplit.toString();
         exportStr += "]";
 
-        exportStr += "\r\n eth:["
+        exportStr += "\r\n["
         exportStr += ethSplit.toString();
-        exportStr += "]\r\n";
+        exportStr += "]\r\n\r\n";
+        exportStr += await log(ethSplit)
         await appendFile(file, exportStr)
     }
+}
+
+async function log(arr){
+    var num = 0, totalEth = 0;
+    for (var i = 0; i < arr.length; i++) {
+        num++;
+        totalEth += Number(arr[i]);
+    }
+    var log = "num:"+num+" eth:"+totalEth
+    console.log(log)
+    return log
 }
 
 async function clearFile(file){

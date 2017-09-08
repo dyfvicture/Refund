@@ -3,6 +3,7 @@ var lineReader = require('line-reader'),
 var eachLine = Promise.promisify(lineReader.eachLine);
 var fs = require('fs');
 var parse = require('csv-parse');
+var assert = require('assert');
 
 function accDiv(arg1, arg2) {
     var t1 = 0, t2 = 0, r1, r2;
@@ -50,7 +51,7 @@ async function initTotalSold() {
         if(itemArr[0] == "序号" || itemArr[0] == ""){
             console.log("SOLD empty:"+line)
         } else {
-            sold.push({no:itemArr[0], addr:itemArr[1], tx:itemArr[2], eth:itemArr[3], lrc:itemArr[4], price:itemArr[5], chanel:itemArr[6]});
+            sold.push({no:itemArr[0], addr:itemArr[1], tx:itemArr[2], eth:itemArr[3], lrc:itemArr[4], chanel:itemArr[5]});
         }
     });
     console.log('done! totally SOLD record:'+sold.length);
@@ -102,7 +103,7 @@ var nothing = []
  * fromAddr: 该条记录的from地址，为了验证
  * toIndex: 处理到的记录
  */
-async function refund(fromIndex, fromAddr){
+async function refund(fromIndex, txHash){
     await initTotalSold();
     await initTotalRefund();
     await initImtokenSold();
@@ -114,6 +115,12 @@ async function refund(fromIndex, fromAddr){
 
     var hasReduce = false;
     await refundArr.forEach(function(refundItem, index){
+
+        if (index == fromIndex) {
+            assert(refundItem.tx === txHash, "txHash not equal.");
+
+        }
+
         if(fromIndex > index){
             if(refundAddrMap[refundItem.from]){
                 refundAddrMap[refundItem.from] = refundAddrMap[refundItem.from] + Number(refundItem.quantity)
@@ -235,6 +242,6 @@ function arrayToCSVStr(header, arrData) {
     return CSV;
 }
 
-refund(0, "0x6faa7921ee3891eab5feb09a0b7eef0a0bf6a07f");
+refund(0, "0xa23bf3f34f39ce647ef603f0aa640ea4a816131f46301ed751a083da9abd1232");
 
 

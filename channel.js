@@ -12,10 +12,10 @@ async function initTotalSold() {
     await eachLine(file, function(line) {
         var itemArr = line.split(",")
         if(itemArr.length != 7) throw new Error("line lenght != 7 , line: "+line);
-        if(itemArr[0] == "序号" || itemArr[0] == ""){
+        if(itemArr[0] == "序号" || itemArr[0] == "" || itemArr[1] == ""){
             console.log("SOLD empty:"+line)
         } else {
-            sold.push({no:itemArr[0], addr:itemArr[1], tx:itemArr[2], eth:itemArr[3], lrc:itemArr[4], price:itemArr[5], chanel:itemArr[6]});
+            sold.push({no:itemArr[0], addr:itemArr[1], tx:itemArr[2], eth:itemArr[3], lrc:itemArr[4], chanel:itemArr[5]});
         }
     });
     console.log('done! totally SOLD record:'+sold.length);
@@ -70,7 +70,7 @@ async function filterChannel(){
                     tokenCapitalSoldArr.push({a:1, tx:soldItem.tx, b:2, c:3, d:4});
                     break;
                 default:
-                    throw new Error("unhandled channel "+soldItem.chanel);
+                    throw new Error("unhandled channel "+soldItem.chanel+" tx:"+soldItem.tx);
             }
         } else { //imtoken和官网
             if(imtokenArr.indexOf(soldItem.tx) <0){ //官网
