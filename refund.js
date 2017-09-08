@@ -73,50 +73,6 @@ async function initTotalRefund(){
     });
     console.log('done! totally REFUND record:'+refund.length);
     refundArr = await refund.concat().reverse();
-    // refundArr = [
-    //     { tx: '0x528bee2d4e09c3ac5ffc04376969c8936fc62c838122d6c7c6cd3f3b24defb75',
-    //         blockno: '"4243791"',
-    //         timestamp: '"1504683100"',
-    //         time: '"9/6/2017 7:31:40 AM"',
-    //         from: '0x6faa7921ee3891eab5feb09a0b7eef0a0bf6a07f',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '120000' },
-    //     { tx: '0x56b234ca55db266701ab38897db8846fd4e2a10a6d8afbf99d86fb54dd241b84',
-    //         blockno: '"4243790"',
-    //         timestamp: '"1504683076"',
-    //         time: '"9/6/2017 7:31:16 AM"',
-    //         from: '0x6faa7921ee3891eab5feb09a0b7eef0a0bf6a07f',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '99990' },
-    //     { tx: '0xecc650119169efbe0fb761aab808ed12a0c843539ce32a43854b4b7e19bce1f2',
-    //         blockno: '"4243789"',
-    //         timestamp: '"1504683034"',
-    //         time: '"9/6/2017 7:30:34 AM"',
-    //         from: '0x6faa7921ee3891eab5feb09a0b7eef0a0bf6a07f',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '8650' },
-    //     { tx: '0x71d41f6e24601ce37b61e60b81d3c93ebb25604e2989cf3fb57975cadca9c423',
-    //         blockno: '"4243789"',
-    //         timestamp: '"1504683034"',
-    //         time: '"9/6/2017 7:30:34 AM"',
-    //         from: '0x6faa7921ee3891eab5feb09a0b7eef0a0bf6a07f',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '112000' },
-    //     { tx: '0x528bee2d4e09c3ac5ffc04376969c8936fc62c838122d6c7c6cd3f3b24defb75',
-    //         blockno: '"4243791"',
-    //         timestamp: '"1504683100"',
-    //         time: '"9/6/2017 7:31:40 AM"',
-    //         from: '0x6faa7921ee3891eab5feb09a0b7eef0a0bf6a07f',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '120' },
-    //     { tx: '0x56b234ca55db266701ab38897db8846fd4e2a10a6d8afbf99d86fb54dd241b84',
-    //         blockno: '"4243790"',
-    //         timestamp: '"1504683076"',
-    //         time: '"9/6/2017 7:31:16 AM"',
-    //         from: '0x6faa7921ee3891eab5feb09a0b7eef0a0bf6a07f',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '7999' }
-    //     ]
 }
 
 var imtokenArr = []
