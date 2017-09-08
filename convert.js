@@ -33,6 +33,8 @@ async function init() {
 
 async function split(onceTake){
     var loop = Math.ceil(addrArr.length / onceTake)
+    var file = "/Users/keithdu/export.json"
+    await clearFile(file)
     for(var i = 0;i < loop; i++) {
         var from = onceTake * i;
         var to = onceTake * (i+1);
@@ -45,14 +47,25 @@ async function split(onceTake){
         exportStr += "\r\n eth:["
         exportStr += ethSplit.toString();
         exportStr += "]\r\n";
-        await writeFile("/Users/keithdu/export.json", exportStr)
+        await appendFile(file, exportStr)
     }
 }
 
-function writeFile(file, content){
+async function clearFile(file){
+    var arr = iconv.encode("", 'gbk');
+
+    await fs.writeFile(file, arr, function(err){
+        if(err)
+            console.log("fail " + err);
+        else
+            console.log("清理文件ok");
+    });
+}
+
+async function appendFile(file, content){
     var arr = iconv.encode(content, 'gbk');
 
-    fs.appendFile(file, arr, function(err){
+    await fs.appendFile(file, arr, function(err){
         if(err)
             console.log("fail " + err);
         else
