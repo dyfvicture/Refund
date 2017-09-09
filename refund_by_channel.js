@@ -76,34 +76,35 @@ async function initTotalRefund(){
     refundArr = await refund.concat().reverse();
 
 
-    // refundArr = [
-    //     { tx: '0xa23bf3f34f39ce647ef603f0aa640ea4a816131f46301ed751a083da9abd1232',
-    //         blockno: '"4243886"',
-    //         timestamp: '"1504685662"',
-    //         time: '"9/6/2017 8:14:22 AM"',
-    //         from: '0x93df435086a2f426a3e478c0792be2f448ad568e',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '13962.778' },
-    //     { tx: '0x463805254e38f3640ab4fa1e0e81c769664204b95cfab6e1a7788a2ba26c3fa9',
-    //         blockno: '"4243890"',
-    //         timestamp: '"1504685832"',
-    //         time: '"9/6/2017 8:17:12 AM"',
-    //         from: '0x93df435086a2f426a3e478c0792be2f448ad568e',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '0' },
-    //     { tx: '0x9cd6c5ac388ffe42b9b519416895ea52e1db257055a488ddeb07bf2e87b19f73',
-    //         blockno: '"4243890"',
-    //         timestamp: '"1504685832"',
-    //         time: '"9/6/2017 8:17:12 AM"',
-    //         from: '0x93df435086a2f426a3e478c0792be2f448ad568e',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '0' }
-    // ]
+    refundArr = [
+        { tx: '0xa23bf3f34f39ce647ef603f0aa640ea4a816131f46301ed751a083da9abd1232',
+            blockno: '"4243886"',
+            timestamp: '"1504685662"',
+            time: '"9/6/2017 8:14:22 AM"',
+            from: '0xfd524f123395ee891623761541ebde695d97982d',
+            to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
+            quantity: '50000' },
+        { tx: '0x463805254e38f3640ab4fa1e0e81c769664204b95cfab6e1a7788a2ba26c3fa9',
+            blockno: '"4243890"',
+            timestamp: '"1504685832"',
+            time: '"9/6/2017 8:17:12 AM"',
+            from: '0xfd524f123395ee891623761541ebde695d97982d',
+            to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
+            quantity: '400000' },
+        { tx: '0x9cd6c5ac388ffe42b9b519416895ea52e1db257055a488ddeb07bf2e87b19f73',
+            blockno: '"4243890"',
+            timestamp: '"1504685832"',
+            time: '"9/6/2017 8:17:12 AM"',
+            from: '0xfd524f123395ee891623761541ebde695d97982d',
+            to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
+            quantity: '1000000' }
+    ]
 }
 
-var imtokenArr = []
-async function initImtokenSold(){
-    var file = "/Users/keithdu/imtoken_tx.csv";
+//统计渠道众售记录
+var channelArr = []
+async function initChannelSold(){
+    var file = "/Users/keithdu/bitcoinworld.csv";
     console.time("begin read file: "+file);
     await eachLine(file, function(line) {
         var itemArr = line.split(",");
@@ -111,17 +112,15 @@ async function initImtokenSold(){
         if(itemArr[0] == "序号" || itemArr[0] == ""){
             console.log("SOLD empty:"+line)
         } else {
-            imtokenArr.push(itemArr[1].substring(1, 67));
+            channelArr.push(itemArr[1].substring(1, 67));
         }
     });
-    console.log('done! imtoken SOLD record:'+imtokenArr.length);
+    console.log('done! channel SOLD record:'+channelArr.length);
 }
 
 var refundSuccess = [];  // 包括成功，和超出的一部分
 var refundNothing = []; // 没有众售记录
-var refundImtoken = []; // imtoken众售部分
 var refundAddrMap = {};
-var nothing = []
 
 /**
  * 根据众售列表（Sold），退款申请表（refund），过滤列表（imtoken），筛选符合条件的退款记录，并计算需要返还的eth数量
@@ -132,13 +131,7 @@ var nothing = []
 async function refund(fromIndex, txHash){
     await initTotalSold();
     await initTotalRefund();
-    await initImtokenSold();
-
-    // soldAddrArr.forEach(function(soldItem, index){
-    //     if(soldItem.addr == "0xd94403c46d6a2b5a4be7b9f46042ac33d1a6dd39"){
-    //         console.log(soldItem.lrc);
-    //     }
-    // });
+    await initChannelSold();
 
     var originSold = {}
     await soldAddrArr.concat().forEach(function(soldItem, index){
@@ -162,39 +155,38 @@ async function refund(fromIndex, txHash){
         }
 
         var soldItems = soldAddrArr.concat().filter(function(soldItem){
-            // if(soldItem.addr == "0xd7f37dd3b66a09bcab1d5b500670582791eb95d6"){
-            //     console.log(soldItem.tx)
-            // }
-            return soldItem.addr == refundItem.from
+            return soldItem.addr == refundItem.from && (channelArr.indexOf(soldItem.tx) >-1)
         });
+        //console.log(soldItems)
 
-        //console.log(soldItems)
-        // 如果有已经退过的，从refund里减掉
-        if(!hasReduce && refundAddrMap[refundItem.from]){
-            var hasRefund = refundAddrMap[refundItem.from]
-            soldItems.forEach(function(soldItem, index){
-                var currentSoldLrc = Number(soldItem.lrc)
-                if(currentSoldLrc > hasRefund){
-                    soldItem.lrc = currentSoldLrc - hasRefund;
-                    hasRefund = 0
-                } else {
-                    soldItem.lrc = 0
-                    hasRefund -= currentSoldLrc
-                }
-            })
-            console.log("退过  addr:"+refundItem.from)
-            console.log("本次要退"+refundItem.quantity+" 已经退过:"+refundAddrMap[refundItem.from])
-            console.log(soldItems)
-            hasReduce = true
-        }
-        //console.log(soldItems)
         if(soldItems.length >0){//找到了众售记录
+            // 如果有已经退过的，从refund里减掉
+            if(!hasReduce && refundAddrMap[refundItem.from]){
+                var hasRefund = refundAddrMap[refundItem.from]
+                soldItems.forEach(function(soldItem, index){
+                    var currentSoldLrc = Number(soldItem.lrc)
+                    if(currentSoldLrc > hasRefund){
+                        soldItem.lrc = currentSoldLrc - hasRefund;
+                        hasRefund = 0
+                    } else {
+                        soldItem.lrc = 0
+                        hasRefund -= currentSoldLrc
+                    }
+                })
+                console.log("退过  addr:"+refundItem.from)
+                console.log("本次要退"+refundItem.quantity+" 已经退过:"+refundAddrMap[refundItem.from])
+                console.log(soldItems)
+                hasReduce = true
+            }
+            //console.log(soldItems)
+
+
             var soldEth = 0, soldLrc = 0; //众售时的计数
             var refundLrc = 0, refundEth = 0; //需要退还的计数
             var requireRefundLrc = Number(refundItem.quantity)
 
-            if(refundItem.from == "0x93df435086a2f426a3e478c0792be2f448ad568e"){
-                console.log("退了lrc:"+refundItem.quantity)
+            if(refundItem.from == "0xfd524f123395ee891623761541ebde695d97982d"){
+                console.log("退款记录 要退lrc:"+refundItem.quantity)
             }
 
             var needRefundLrc = requireRefundLrc; //还要退换的lrc数量
@@ -202,9 +194,6 @@ async function refund(fromIndex, txHash){
                 // if(soldItem.addr == "0xd7f37dd3b66a09bcab1d5b500670582791eb95d6"){
                 //     console.log(soldItem.tx+" "+soldItem.lrc)
                 // }
-                if(soldItem.chanel != ""){ //不处理机构投资
-                    return;
-                }
                 var currentSoldLrc = Number(soldItem.lrc)
                 var currentSoldEth = Number(soldItem.eth)
                 if(currentSoldLrc == 0){ //当前众售lrc已为0
@@ -212,7 +201,7 @@ async function refund(fromIndex, txHash){
                 }
 
                 if(needRefundLrc > 0){ //还不够退
-                    if(refundItem.from == "0x80990f1e9cd6cbb9dd54a86bb0515cc2dcc17d44"){
+                    if(refundItem.from == "0xfd524f123395ee891623761541ebde695d97982d"){
                         console.log(index +"=="+ (soldItems.length -1)+" && "+needRefundLrc +">"+ currentSoldLrc)
                     }
                     if(index == (soldItems.length -1) && needRefundLrc > currentSoldLrc){ //多退回了lrc
@@ -227,7 +216,7 @@ async function refund(fromIndex, txHash){
                         refundLrc += currentSoldLrc;
                         needRefundLrc -= currentSoldLrc;
                     } else {// sold刚好或多于refund
-                        if(refundItem.from == "0x80990f1e9cd6cbb9dd54a86bb0515cc2dcc17d44"){
+                        if(refundItem.from == "0xfd524f123395ee891623761541ebde695d97982d"){
                             console.log(needRefundLrc+"/"+originSold[soldItem.tx]+"*"+Number(soldItem.eth))
                         }
                         currentSoldEth = accDiv(needRefundLrc, originSold[soldItem.tx]) * currentSoldEth
@@ -238,15 +227,12 @@ async function refund(fromIndex, txHash){
                     }
                     soldLrc += currentSoldLrc
                     soldEth += currentSoldEth
-                    if(refundItem.from == "0x80990f1e9cd6cbb9dd54a86bb0515cc2dcc17d44"){
+                    if(refundItem.from == "0xfd524f123395ee891623761541ebde695d97982d"){
                         console.log("soldLrc:"+currentSoldLrc+" soldEth:"+currentSoldEth+" refundLrc:"+refundLrc+" refundEth:"+refundEth+" requireRefundLrc:"+needRefundLrc)
                     }
                     soldItem.lrc = soldItem.lrc - currentSoldLrc;
                     if(soldItem.lrc <0) throw new Error("减成了负数");
 
-                    if(imtokenArr.indexOf(soldItem.tx) >-1) {
-                        refundImtoken.push({refundTx: refundItem.tx, soldTx:soldItem.tx, address: refundItem.from, refundLrc:currentSoldLrc, refundEth:currentSoldEth})
-                    }
                     //console.log("soldEth:"+soldEth+" soldLrc:"+currentSoldLrc+" soldEth:"+currentSoldEth+" refundLrc:"+refundLrc+" refundEth:"+refundEth+" requireRefundLrc:"+needRefundLrc)
                 }
                 if(index == soldItems.length -1){
@@ -273,9 +259,6 @@ async function refund(fromIndex, txHash){
 
     var fileSuccess = arrayToCSVStr([], refundSuccess);
     fs.writeFileSync("refund_success.csv", fileSuccess);
-
-    var fileImtoken = arrayToCSVStr([], refundImtoken);
-    fs.writeFileSync("refund_imtoken.csv", fileImtoken);
 }
 
 function arrayToCSVStr(header, arrData) {
@@ -294,6 +277,6 @@ function arrayToCSVStr(header, arrData) {
     return CSV;
 }
 
-refund(1098, "0x1320f6fe8eebdb60b9a55e4a869a2f966b84623e43e377203c15e025e7a5e49f");
+refund(0, "0xa23bf3f34f39ce647ef603f0aa640ea4a816131f46301ed751a083da9abd1232");
 
 

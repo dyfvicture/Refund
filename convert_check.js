@@ -10,17 +10,13 @@ var ethArr = [];
 var soldAddrAsc = function(x,y) {
     if(x['addr'] > y['addr']){
         return 1
-    } else if(x['addr'] == y['addr']){
-        if(Number(x['no']) > Number(y['no'])){
-            return 1
-        } else {
-            return -1
-        }
     } else {
         return -1
     }
 }
 
+// 将要退款的记录输出  地址:eth，地址升序排列，方便比较
+var array = [];
 async function init() {
     var file = "/Users/keithdu/NodeJsProjects/ico/refund_success.csv";
     console.time("begin read file: "+file);
@@ -35,45 +31,28 @@ async function init() {
             //console.log(itemArr[3]+"  |||| "+ eth+" * 100 * 10^6 = "+(Math.floor(eth * 100)*10000000000000000))
             eth = Math.floor(eth * 100)*1e+16;
             ethArr.push(eth);
+            array.push({addr: itemArr[1], eth:eth})
         }
     });
     if(addrArr.length != ethArr.length){
         throw new Error("addrArr.length:"+addrArr.length+" != ethArr.length:"+ethArr.length);
     }
+    await array.sort(soldAddrAsc)
     console.log('done! totally REFUND record:'+addrArr.length);
-    await split(100)
+
+    await output()
 }
 
-async function split(onceTake){
-    var loop = Math.ceil(addrArr.length / onceTake);
-    var file = "/Users/keithdu/convert.json";
+async function output(){
+    var file = "/Users/keithdu/convert_check.json";
     await clearFile(file);
-
-    for(var i = 0;i < loop; i++) {
-        var from = onceTake * i;
-        var to = onceTake * (i+1);
-        var addrSplit = addrArr.slice(from, to);
-        var ethSplit = ethArr.slice(from, to);
-        var exportStr = "\r\n\n\r\n[";
-        exportStr += addrSplit.toString();
-        exportStr += "]";
-
-        exportStr += "\r\n["
-        exportStr += ethSplit.toString();
-        exportStr += "]\r\n\r\n";
-        exportStr += await log(ethSplit)
-        await appendFile(file, exportStr)
-    }
-}
-
-async function log(arr){
-    var num = 0, totalEth = 0;
-    for (var i = 0; i < arr.length; i++) {
-        num++;
-        totalEth += Number(arr[i]);
-    }
-    var log = "num:"+num+" eth:"+totalEth/1e+18
-    return log
+    var exportStr = "";
+    array.forEach(function(item, index){
+        exportStr += item.addr;
+        exportStr += ":"+item.eth;
+        exportStr += "\r\n"
+    })
+    await appendFile(file, exportStr)
 }
 
 async function clearFile(file){
