@@ -21,7 +21,7 @@ var addrAsc = function(x,y) {
     }
 }
 
-var outputArr = [];
+var outputStr = ""
 var arr = [];
 async function init() {
     var file = "/Users/keithdu/NodeJsProjects/ico/refund_success.csv";
@@ -39,12 +39,13 @@ async function init() {
     await arr.sort(addrAsc)
     console.log('done! totally REFUND record:'+addrArr.length);
     await arr.forEach(function(item, index){
-        outputArr.push(item.addr+":"+item.eth+"\r\n");
+        var eth = Math.floor(item.eth * 100)*1e+16;
+        outputStr += item.addr+":"+eth+"\r\n"
     })
 
-    var file = "/Users/keithdu/new.json";
+    var file = "/Users/keithdu/compare0912.json";
     await clearFile(file);
-    await appendFile(file, outputArr)
+    await appendFile(file, outputStr)
 }
 
 async function init1() {
@@ -74,7 +75,8 @@ async function init1() {
     await arr.sort(addrAsc)
     console.log('done! totally REFUND record:'+addrArr.length);
     await arr.forEach(function(item, index){
-        outputArr.push(item.addr+":"+item.eth+"\r\n");
+        var eth = Math.floor(item.eth * 100)*1e+16;
+        outputArr.push(item.addr+":"+eth+"\r\n");
     })
 
     var file = "/Users/keithdu/new.json";
@@ -105,6 +107,6 @@ async function appendFile(file, content){
     });
 }
 
-init1()
+init()
 
 

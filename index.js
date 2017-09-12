@@ -23,7 +23,7 @@ var soldAddrAsc = function(x,y) {
 
 var refundArr =[];
 async function init(refundTx) {
-    var file = "/Users/keithdu/export-token-0xef68e7c694f40c8202821edf525de3782458639f.csv";
+    var file = "/Users/keithdu/export-token-0xef68e7c694f40c8202821edf525de3782458639f-0912.csv";
     console.time("begin read file: " + file);
     var refund = [];
     await eachLine(file, function (line) {
@@ -55,4 +55,4 @@ async function init(refundTx) {
     console.log(pos)
 }
 
-init("0x1320f6fe8eebdb60b9a55e4a869a2f966b84623e43e377203c15e025e7a5e49f")
+init("0x55b75e85ac71bfba3b312c743224ac73f497d01b098239aaf93153b3d972d14b")

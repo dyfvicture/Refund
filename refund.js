@@ -60,7 +60,7 @@ async function initTotalSold() {
 
 var refundArr = []
 async function initTotalRefund(){
-    var file = "/Users/keithdu/export-token-0xef68e7c694f40c8202821edf525de3782458639f.csv";
+    var file = "/Users/keithdu/export-token-0xef68e7c694f40c8202821edf525de3782458639f-0912.csv";
     var refund =[];
     console.time("begin read file: "+file);
     await eachLine(file, function(line) {
@@ -74,31 +74,6 @@ async function initTotalRefund(){
     });
     console.log('done! totally REFUND record:'+refund.length);
     refundArr = await refund.concat().reverse();
-
-
-    // refundArr = [
-    //     { tx: '0xa23bf3f34f39ce647ef603f0aa640ea4a816131f46301ed751a083da9abd1232',
-    //         blockno: '"4243886"',
-    //         timestamp: '"1504685662"',
-    //         time: '"9/6/2017 8:14:22 AM"',
-    //         from: '0x93df435086a2f426a3e478c0792be2f448ad568e',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '13962.778' },
-    //     { tx: '0x463805254e38f3640ab4fa1e0e81c769664204b95cfab6e1a7788a2ba26c3fa9',
-    //         blockno: '"4243890"',
-    //         timestamp: '"1504685832"',
-    //         time: '"9/6/2017 8:17:12 AM"',
-    //         from: '0x93df435086a2f426a3e478c0792be2f448ad568e',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '0' },
-    //     { tx: '0x9cd6c5ac388ffe42b9b519416895ea52e1db257055a488ddeb07bf2e87b19f73',
-    //         blockno: '"4243890"',
-    //         timestamp: '"1504685832"',
-    //         time: '"9/6/2017 8:17:12 AM"',
-    //         from: '0x93df435086a2f426a3e478c0792be2f448ad568e',
-    //         to: '0x9952f869f12a7af92ab86b275cfa231c868aad23',
-    //         quantity: '0' }
-    // ]
 }
 
 var imtokenArr = []
@@ -189,11 +164,11 @@ async function refund(fromIndex, txHash){
         }
         //console.log(soldItems)
         if(soldItems.length >0){//找到了众售记录
-            var soldEth = 0, soldLrc = 0; //众售时的计数
+            var soldLrc = 0; //众售时的计数
             var refundLrc = 0, refundEth = 0; //需要退还的计数
-            var requireRefundLrc = Number(refundItem.quantity)
+            var requireRefundLrc = Math.floor(Number(refundItem.quantity))//最小退还1个lrc，精度保留到个
 
-            if(refundItem.from == "0x93df435086a2f426a3e478c0792be2f448ad568e"){
+            if(refundItem.from == "0xfa1aebd4852f68b4ddc9fb0fba1f66a91eba2f6e"){
                 console.log("退了lrc:"+refundItem.quantity)
             }
 
@@ -207,27 +182,29 @@ async function refund(fromIndex, txHash){
                 }
                 var currentSoldLrc = Number(soldItem.lrc)
                 var currentSoldEth = Number(soldItem.eth)
-                if(currentSoldLrc == 0){ //当前众售lrc已为0
-                    return;
+                if(currentSoldLrc < 0){
+                    throw new Error("已经退过？lrc减成了负数");
                 }
 
                 if(needRefundLrc > 0){ //还不够退
-                    if(refundItem.from == "0x80990f1e9cd6cbb9dd54a86bb0515cc2dcc17d44"){
+                    if(refundItem.from == "0xfa1aebd4852f68b4ddc9fb0fba1f66a91eba2f6e"){
                         console.log(index +"=="+ (soldItems.length -1)+" && "+needRefundLrc +">"+ currentSoldLrc)
                     }
                     if(index == (soldItems.length -1) && needRefundLrc > currentSoldLrc){ //多退回了lrc
                         needRefundLrc = currentSoldLrc
                     }
                     if(currentSoldLrc < needRefundLrc){ //本次sold还不够退
-                        if(currentSoldLrc < originSold[soldItem.tx]){ //已经减去了一部分，按比例缩减eth
-                            refundEth += accDiv(currentSoldLrc, originSold[soldItem.tx]) * currentSoldEth
-                        } else {
-                            refundEth += currentSoldEth;
+                        if(currentSoldLrc >0){
+                            if(currentSoldLrc < originSold[soldItem.tx]){ //已经减去了一部分，按比例缩减eth
+                                refundEth += accDiv(currentSoldLrc, originSold[soldItem.tx]) * currentSoldEth
+                            } else {
+                                refundEth += currentSoldEth;
+                            }
+                            refundLrc += currentSoldLrc;
+                            needRefundLrc -= currentSoldLrc;
                         }
-                        refundLrc += currentSoldLrc;
-                        needRefundLrc -= currentSoldLrc;
                     } else {// sold刚好或多于refund
-                        if(refundItem.from == "0x80990f1e9cd6cbb9dd54a86bb0515cc2dcc17d44"){
+                        if(refundItem.from == "0xfa1aebd4852f68b4ddc9fb0fba1f66a91eba2f6e"){
                             console.log(needRefundLrc+"/"+originSold[soldItem.tx]+"*"+Number(soldItem.eth))
                         }
                         currentSoldEth = accDiv(needRefundLrc, originSold[soldItem.tx]) * currentSoldEth
@@ -237,8 +214,7 @@ async function refund(fromIndex, txHash){
                         needRefundLrc = 0;
                     }
                     soldLrc += currentSoldLrc
-                    soldEth += currentSoldEth
-                    if(refundItem.from == "0x80990f1e9cd6cbb9dd54a86bb0515cc2dcc17d44"){
+                    if(refundItem.from == "0xfa1aebd4852f68b4ddc9fb0fba1f66a91eba2f6e"){
                         console.log("soldLrc:"+currentSoldLrc+" soldEth:"+currentSoldEth+" refundLrc:"+refundLrc+" refundEth:"+refundEth+" requireRefundLrc:"+needRefundLrc)
                     }
                     soldItem.lrc = soldItem.lrc - currentSoldLrc;
@@ -251,14 +227,18 @@ async function refund(fromIndex, txHash){
                 }
                 if(index == soldItems.length -1){
                     if(soldLrc < Number(refundItem.quantity)){//退的比买的多
-                        refundSuccess.push({tx:refundItem.tx, address: refundItem.from, refundLrc:refundLrc, refundEth:refundEth, lrcNotRefund: (requireRefundLrc - soldLrc)})
+                        if(soldLrc == 0){
+                            refundNothing.push({tx:refundItem.tx, address: refundItem.from, requireRefundLrc:refundItem.quantity})
+                        } else {
+                            refundSuccess.push({tx:refundItem.tx, address: refundItem.from, refundLrc:refundLrc, refundEth:refundEth, lrcNotRefund: (requireRefundLrc - soldLrc)})
+                        }
                     } else {//足够退
                         refundSuccess.push({tx:refundItem.tx, address: refundItem.from, refundLrc:refundLrc, refundEth:refundEth, lrcNotRefund: 0})
                     }
                 }
             });
         } else { //没找到众售记录
-            refundNothing.push({tx:refundItem.tx, requireRefundLrc:refundItem.quantity})
+            refundNothing.push({tx:refundItem.tx, address: refundItem.from, requireRefundLrc:refundItem.quantity})
         }
     });
 
@@ -294,6 +274,6 @@ function arrayToCSVStr(header, arrData) {
     return CSV;
 }
 
-refund(1098, "0x1320f6fe8eebdb60b9a55e4a869a2f966b84623e43e377203c15e025e7a5e49f");
+refund(1702, "0x55b75e85ac71bfba3b312c743224ac73f497d01b098239aaf93153b3d972d14b");
 
 

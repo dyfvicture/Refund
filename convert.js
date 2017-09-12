@@ -4,39 +4,40 @@ var fs = require('fs');
 var iconv = require('iconv-lite');
 var eachLine = Promise.promisify(lineReader.eachLine);
 
-var addrArr = [];
-var ethArr = [];
-
 var soldAddrAsc = function(x,y) {
     if(x['addr'] > y['addr']){
         return 1
-    } else if(x['addr'] == y['addr']){
-        if(Number(x['no']) > Number(y['no'])){
-            return 1
-        } else {
-            return -1
-        }
     } else {
         return -1
     }
 }
 
+var addrArr = [];
+var ethArr = [];
 async function init() {
     var file = "/Users/keithdu/NodeJsProjects/ico/refund_success.csv";
     console.time("begin read file: "+file);
+    var array = []
     await eachLine(file, function(line) {
         var itemArr = line.split(",")
         if(itemArr.length != 5) throw new Error("line lenght != 5 , line: "+line);
         if(itemArr[0] == ""){
             console.log("empty:"+line)
         } else {
-            addrArr.push(itemArr[1]);
-            var eth = Number(itemArr[3].substring(1, itemArr[3].length-1));
-            //console.log(itemArr[3]+"  |||| "+ eth+" * 100 * 10^6 = "+(Math.floor(eth * 100)*10000000000000000))
+            var eth = Number(itemArr[3].substring(1, itemArr[3].length-1)) + 0.000000001;
             eth = Math.floor(eth * 100)*1e+16;
-            ethArr.push(eth);
+            if(eth == 0){
+                console.log("WARNNING: address: "+itemArr[1]+" eth:0")
+                return
+            }
+            array.push({addr:itemArr[1], eth:eth})
         }
     });
+    await array.sort(soldAddrAsc);
+    await array.forEach(function(item, index){
+        addrArr.push(item.addr)
+        ethArr.push(item.eth)
+    })
     if(addrArr.length != ethArr.length){
         throw new Error("addrArr.length:"+addrArr.length+" != ethArr.length:"+ethArr.length);
     }
@@ -46,7 +47,7 @@ async function init() {
 
 async function split(onceTake){
     var loop = Math.ceil(addrArr.length / onceTake);
-    var file = "/Users/keithdu/convert.json";
+    var file = "/Users/keithdu/convert_170912.json";
     await clearFile(file);
 
     for(var i = 0;i < loop; i++) {
