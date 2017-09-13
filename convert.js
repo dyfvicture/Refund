@@ -47,7 +47,7 @@ async function init() {
 
 async function split(onceTake){
     var loop = Math.ceil(addrArr.length / onceTake);
-    var file = "/Users/keithdu/convert_170912.json";
+    var file = "/Users/keithdu/convert_170913.json";
     await clearFile(file);
 
     for(var i = 0;i < loop; i++) {

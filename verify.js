@@ -43,7 +43,7 @@ async function init() {
         outputStr += item.addr+":"+eth+"\r\n"
     })
 
-    var file = "/Users/keithdu/compare0912.json";
+    var file = "/Users/keithdu/compare0913.json";
     await clearFile(file);
     await appendFile(file, outputStr)
 }
