@@ -159,9 +159,9 @@ async function refund(fromIndex, txHash){
             return soldItem.addr == refundItem.from && soldItem.chanel == ""; //不处理机构投资
         });
 
-        if(refundItem.from == "0x69ea6b31ef305d6b99bb2d4c9d99456fa108b02a"){
-            console.log(soldItems)
-        }
+        // if(refundItem.from == "0x69ea6b31ef305d6b99bb2d4c9d99456fa108b02a"){
+        //     console.log(soldItems)
+        // }
         // 如果有已经退过的，从refund里减掉
         if(refundAddrMap[refundItem.from]){
             var hasRefund = refundAddrMap[refundItem.from]
@@ -186,7 +186,7 @@ async function refund(fromIndex, txHash){
             var refundLrc = 0, refundEth = 0; //需要退还的计数
             var requireRefundLrc = Math.floor(Number(refundItem.quantity))//最小退还1个lrc，精度保留到个
 
-            if(refundItem.from == "0x69ea6b31ef305d6b99bb2d4c9d99456fa108b02a"){
+            if(refundItem.from == "0x64b7975b63085e25cf98515ccb581daf0561ee3f"){
                 console.log("退了lrc:"+refundItem.quantity)
             }
 
@@ -202,7 +202,7 @@ async function refund(fromIndex, txHash){
                 }
 
                 if(needRefundLrc > 0){ //还不够退
-                    if(refundItem.from == "0x69ea6b31ef305d6b99bb2d4c9d99456fa108b02a"){
+                    if(refundItem.from == "0x64b7975b63085e25cf98515ccb581daf0561ee3f"){
                         console.log(index +"=="+ (soldItems.length -1)+" && "+needRefundLrc +">"+ currentSoldLrc)
                     }
                     if(index == (soldItems.length -1) && needRefundLrc > currentSoldLrc){ //多退回了lrc
@@ -223,7 +223,7 @@ async function refund(fromIndex, txHash){
                             currentSoldEth = 0
                         }
                     } else {// sold刚好或多于refund
-                        if(refundItem.from == "0x69ea6b31ef305d6b99bb2d4c9d99456fa108b02a"){
+                        if(refundItem.from == "0x64b7975b63085e25cf98515ccb581daf0561ee3f"){
                             console.log(needRefundLrc+"/"+originSold[soldItem.tx]+"*"+Number(soldItem.eth))
                         }
                         currentSoldEth = accDiv(needRefundLrc, originSold[soldItem.tx]) * currentSoldEth
@@ -233,8 +233,9 @@ async function refund(fromIndex, txHash){
                         needRefundLrc = 0;
                     }
                     soldLrc += currentSoldLrc
-                    if(refundItem.from == "0x69ea6b31ef305d6b99bb2d4c9d99456fa108b02a"){
+                    if(refundItem.from == "0x64b7975b63085e25cf98515ccb581daf0561ee3f"){
                         console.log("soldLrc:"+currentSoldLrc+" soldEth:"+currentSoldEth+" refundLrc:"+refundLrc+" refundEth:"+refundEth+" requireRefundLrc:"+needRefundLrc)
+                        console.log("indexof ["+soldItem.tx+"]="+imtokenArr.indexOf(soldItem.tx))
                     }
                     soldItem.lrc = soldItem.lrc - currentSoldLrc;
                     if(soldItem.lrc <0) throw new Error("减成了负数");
@@ -253,7 +254,7 @@ async function refund(fromIndex, txHash){
                             imtoken += refundImtokenMap[refundItem.from]
                         }
                         refundImtokenMap[refundItem.from] = imtoken
-                        if(refundItem.from == "0x69ea6b31ef305d6b99bb2d4c9d99456fa108b02a"){
+                        if(refundItem.from == "0x64b7975b63085e25cf98515ccb581daf0561ee3f"){
                             console.log("[[[[[[[eth:"+eth+" imtoken:"+imtoken)
                         }
                     }
@@ -268,7 +269,7 @@ async function refund(fromIndex, txHash){
                             refundImtokenArr.push({tx:refundItem.tx, soldTx: soldItem.tx, address: refundItem.from, refundLrc:refundLrc, refundEth:refundEth, lrcNotRefund: Math.floor(requireRefundLrc - soldLrc)})
                             if(Math.floor(requireRefundLrc - soldLrc) > 0){
                                 var lrc = Math.floor(Number(refundItem.quantity) - soldLrc) >55 ? Math.floor(Number(refundItem.quantity) - soldLrc) : 0
-                                if(refundItem.from == "0x69ea6b31ef305d6b99bb2d4c9d99456fa108b02a"){
+                                if(refundItem.from == "0x64b7975b63085e25cf98515ccb581daf0561ee3f"){
                                     console.log("failed lrc:"+Math.floor(Number(refundItem.quantity) - soldLrc))
                                 }
                                 refundFailed.push({tx:refundItem.tx, address: refundItem.from, leftLrc: Math.floor(Number(refundItem.quantity) - soldLrc), requireRefundLrc: lrc})
@@ -283,7 +284,9 @@ async function refund(fromIndex, txHash){
         } else { //没找到众售记录
             refundNothing.push({tx:refundItem.tx, address: refundItem.from, requireRefundLrc:refundItem.quantity})
             var lrc = Math.floor(refundItem.quantity) >55 ? Math.floor(refundItem.quantity) : 0
+
             if(refundItem.from != '0x9952f869f12a7af92ab86b275cfa231c868aad23'){ //不要改
+
                 refundFailed.push({tx:refundItem.tx, address: refundItem.from, leftLrc : Math.floor(refundItem.quantity), requireRefundLrc:lrc})
             }
         }
@@ -292,7 +295,7 @@ async function refund(fromIndex, txHash){
             untilNowLrc += addressTotalRefundMap[refundItem.from]
         }
         addressTotalRefundMap[refundItem.from] = untilNowLrc
-        if(refundItem.from == '0x02041458783b6a2b24828f3db9ef66029d685bbe'){
+        if(refundItem.from == '0x64b7975b63085e25cf98515ccb581daf0561ee3f'){
             console.log("   sold lrc: "+untilNowLrc)
         }
     });
@@ -305,7 +308,7 @@ async function refund(fromIndex, txHash){
 
     await imtokenSort()
 
-    await bbb()
+    await refundLrc()
 
     var fileNothing = arrayToCSVStr([], refundNothing);
     fs.writeFileSync("refund_nothing.csv", fileNothing);
@@ -321,37 +324,35 @@ async function refund(fromIndex, txHash){
 
     var fileRefundImtokenTxt = arrayToCSVStr([], imtokenSortedArr);
     fs.writeFileSync("refund_imtoken_sort.csv", fileRefundImtokenTxt);
-
-
 }
 
-async function bbb(){
+async function refundLrc(){
     var array = []
     for(var key in addressTotalRefundMap){
         var actial = 0
         if(addressActialRefundMap[key]){
             actial =  addressActialRefundMap[key]
         }
-        var lrcLeft = addressTotalRefundMap[key] - actial
+        var lrcLeft = Math.floor(addressTotalRefundMap[key] - actial)
         if(key == '0x02041458783b6a2b24828f3db9ef66029d685bbe'){
             console.log("   refund lrc: "+addressTotalRefundMap[key]+" - "+actial+" = "+lrcLeft)
         }
-        if(lrcLeft > 55 && key != "0x9952f869f12a7af92ab86b275cfa231c868aad23"){
+        if(lrcLeft >= 55 && key != "0x9952f869f12a7af92ab86b275cfa231c868aad23"){
             array.push({address: key, lrcLeft: lrcLeft})
         }
     }
     await array.sort(soldAddressAsc)
     var fileRefundFaild = arrayToCSVStr([], array);
-    fs.writeFileSync("refund_failed.csv", fileRefundFaild);
+    fs.writeFileSync("refund_lrc.csv", fileRefundFaild);
 }
 
 var imtokenSortedArr = []
 async function imtokenSort(){
-    var imtokenArr1 = []
-    refundImtokenArr.forEach(function(imtokenItem, index){
-        if(imtokenArr.indexOf(imtokenItem.soldTx) >-1) imtokenArr1.push(imtokenItem)
-    })
-    console.log("1111111111111   "+imtokenArr1.length)
+    // var imtokenArr1 = []
+    // refundImtokenArr.forEach(function(imtokenItem, index){
+    //     if(imtokenArr.indexOf(imtokenItem.soldTx) >-1) imtokenArr1.push(imtokenItem)
+    // })
+    // console.log("1111111111111   "+imtokenArr1.length)
 
     for(var key in refundImtokenMap){
         var eth = Math.floor((refundImtokenMap[key] + 0.00000001) * 100) / 100
@@ -398,7 +399,7 @@ function arrayToCSVStr(header, arrData) {
     return CSV;
 }
 
-//refund(0, "0xa23bf3f34f39ce647ef603f0aa640ea4a816131f46301ed751a083da9abd1232");
+refund(0, "0xa23bf3f34f39ce647ef603f0aa640ea4a816131f46301ed751a083da9abd1232");
 
-refund(1744, "0x32f73af71bd317db99b04461aa3b290e1b8b1406c65de7ef1464781af4eab390");
+//refund(1744, "0x32f73af71bd317db99b04461aa3b290e1b8b1406c65de7ef1464781af4eab390");
 
